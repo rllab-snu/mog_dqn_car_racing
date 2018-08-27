@@ -2,16 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="589f233c-d2ce-496c-9375-5abf1923ee47" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/dist-dqn.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/distdeepq/build_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/build_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/distdeepq/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/distdeepq/plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/plots.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/distdeepq/simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/simple.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/distdeepq/static.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/static.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quantile-dqn.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_atari.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_atari.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_pong.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_car_racing.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_car_racing.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -22,14 +14,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="train_car_racing.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="train_car_racing.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_car_racing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="453">
-              <caret line="83" lean-forward="true" selection-start-line="83" selection-end-line="83" />
+            <state relative-caret-position="498">
+              <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="28" selection-start-column="28" selection-end-column="28" />
             </state>
           </provider>
         </entry>
@@ -114,6 +115,7 @@
         <option value="$PROJECT_DIR$/distdeepq/models.py" />
         <option value="$PROJECT_DIR$/train_atari.py" />
         <option value="$PROJECT_DIR$/train_car_racing.py" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -233,10 +235,10 @@
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15687332" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15687332" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5007143" side_tool="true" weight="0.32623318" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32889345" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32889345" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32889345" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -539,9 +541,6 @@ print(sess.run(errors))</expression-string>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/distdeepq/static.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
@@ -574,11 +573,18 @@ print(sess.run(errors))</expression-string>
     </entry>
     <entry file="file://$PROJECT_DIR$/train_car_racing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="453">
-          <caret line="83" lean-forward="true" selection-start-line="83" selection-end-line="83" />
+        <state relative-caret-position="498">
+          <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="28" selection-start-column="28" selection-end-column="28" />
         </state>
       </provider>
     </entry>

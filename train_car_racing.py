@@ -84,4 +84,4 @@ def get_action_information(env, env_name, action_res=None):
 
 
 if __name__ == '__main__':
-    exp(buffer_size=1e4, action_res=[5, 5, 5])
+    exp(buffer_size=1e5, action_res=[5, 5, 5])
