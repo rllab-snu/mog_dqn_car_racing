@@ -4,14 +4,14 @@ import os
 import gym
 
 
-def build_z(Vmin, Vmax, nb_atoms, numpy=False):
-    dz = (Vmax - Vmin) / (nb_atoms - 1)
-    if numpy:
-        z = np.arange(Vmin, Vmax + dz / 2, dz)
-    else:
-        z = tf.range(Vmin, Vmax + dz / 2, dz, dtype=tf.float32, name='z')  # TODO: reuse?
-
-    return z, dz
+# def build_z(nb_atoms, numpy=False):
+#     dz = (Vmax - Vmin) / (nb_atoms - 1)
+#     if numpy:
+#         z = np.arange(Vmin, Vmax + dz / 2, dz)
+#     else:
+#         z = tf.range(Vmin, Vmax + dz / 2, dz, dtype=tf.float32, name='z')  # TODO: reuse?
+#
+#     return z, dz
 
 
 def parent_path(path):
@@ -43,7 +43,7 @@ def make_env(game_name):
     from baselines.common.atari_wrappers import wrap_deepmind, make_atari
     env = make_atari(game_name + "NoFrameskip-v4")
     monitored_env = SimpleMonitor(env)
-    env = wrap_deepmind(monitored_env, frame_stack=True, scale=True)
+    env = wrap_deepmind(monitored_env, clip_rewards=False, frame_stack=True, scale=True)
     return env, monitored_env
 
 

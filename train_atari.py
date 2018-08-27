@@ -51,9 +51,9 @@ def parse_args():
     parser.add_argument("--prioritized-beta0", type=float, default=0.4, help="initial value of beta parameters for prioritized replay")
     parser.add_argument("--prioritized-eps", type=float, default=1e-6, help="eps parameter for prioritized replay buffer")
     # Distributional Perspective
-    parser.add_argument("--vmin", type=float, default=-10., help="lower bound for histogram atoms")
-    parser.add_argument("--vmax", type=float, default=10., help="upper bound for histogram atoms")
-    parser.add_argument("--nb-atoms", type=int, default=51, help="number of histogram atoms")
+    # parser.add_argument("--vmin", type=float, default=-10., help="lower bound for histogram atoms")
+    # parser.add_argument("--vmax", type=float, default=10., help="upper bound for histogram atoms")
+    parser.add_argument("--nb-atoms", type=int, default=5, help="number of histogram atoms")
     # Checkpointing
     parser.add_argument("--save-dir", type=str, default=None, help="directory in which training state and model should be saved.")
     parser.add_argument("--save-azure-container", type=str, default=None,
@@ -135,7 +135,10 @@ if __name__ == '__main__':
         with open(os.path.join(savedir, 'args.json'), 'w') as f:
             json.dump(vars(args), f)
 
-    with distdeepq.make_session(4) as sess:
+    with distdeepq.make_session(16) as sess: # 4
+    
+        logger.configure()
+
         # Create training graph and replay buffer
         act, train, update_target, debug = distdeepq.build_train(
             make_obs_ph=lambda name: U.Uint8Input(env.observation_space.shape, name=name),
@@ -146,8 +149,8 @@ if __name__ == '__main__':
             grad_norm_clipping=10,
             double_q=args.double_q,
             param_noise=args.param_noise,
-            dist_params={'Vmin': args.vmin,
-                         'Vmax': args.vmax,
+            dist_params={#'Vmin': args.vmin,
+                         #'Vmax': args.vmax,
                          'nb_atoms': args.nb_atoms}
         )
 

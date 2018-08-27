@@ -66,8 +66,9 @@ The functions in this file can are used to create the following functions:
 
 """
 import tensorflow as tf
+import numpy as np
 import baselines.common.tf_util as U
-from .static import build_z
+# from .static import build_z
 
 
 def default_param_noise_filter(var):
@@ -85,19 +86,30 @@ def default_param_noise_filter(var):
     return False
 
 
-def p_to_q(p_values, dist_params):
-    z, _ = build_z(**dist_params)
-    print(z, p_values)
-    return tf.tensordot(p_values, z, [[-1], [-1]])
+def p_to_q(pi, mu, dist_params):
+    # z, _ = build_z(**dist_params)
+    # print(z, p_values)
+    # return tf.tensordot(p_values, z, [[-1], [-1]])
+
+    return tf.reduce_sum(tf.multiply(pi, mu), axis=-1)
 
 
-def pick_action(p_values, dist_params):
-    q_values = p_to_q(p_values, dist_params)
-    deterministic_actions = tf.argmax(q_values, axis=1)
-    return deterministic_actions
+def pick_action(pi, mu, dist_params):
+    q_values = p_to_q(pi, mu, dist_params)
+    # greedy case
+    actions = tf.argmax(q_values, axis=1)
+
+    # sparsemax case
+    # q_values = q_values / 1.
+    # policy = tf.contrib.sparsemax.sparsemax(q_values)
+    # actions = tf.multinomial(tf.log(policy),1)
+
+    # actions = tf.reshape(actions,[-1])
+
+    return actions
 
 
-def build_act(make_obs_ph, p_dist_func, num_actions, dist_params, scope="distdeepq", reuse=None):
+def build_act(make_obs_ph, p_dist_func, n_action, dist_params, scope="distdeepq", reuse=None):
     """Creates the act function:
 
     Parameters
@@ -134,11 +146,11 @@ def build_act(make_obs_ph, p_dist_func, num_actions, dist_params, scope="distdee
 
         eps = tf.get_variable("eps", (), initializer=tf.constant_initializer(0))
 
-        p_values = p_dist_func(observations_ph.get(), num_actions, dist_params['nb_atoms'], scope="q_func")
-        deterministic_actions = pick_action(p_values, dist_params)
+        pi, sigma, mu = p_dist_func(observations_ph.get(), n_action, dist_params['nb_atoms'], scope="q_func")
+        deterministic_actions = pick_action(pi, mu, dist_params)
 
         batch_size = tf.shape(observations_ph.get())[0]
-        random_actions = tf.random_uniform(tf.stack([batch_size]), minval=0, maxval=num_actions, dtype=tf.int64)
+        random_actions = tf.random_uniform(tf.stack([batch_size]), minval=0, maxval=n_action, dtype=tf.int64)
         chose_random = tf.random_uniform(tf.stack([batch_size]), minval=0, maxval=1, dtype=tf.float32) < eps
         stochastic_actions = tf.where(chose_random, random_actions, deterministic_actions)
 
@@ -151,7 +163,7 @@ def build_act(make_obs_ph, p_dist_func, num_actions, dist_params, scope="distdee
         return act
 
 
-def build_train(make_obs_ph, p_dist_func, num_actions, optimizer, grad_norm_clipping=None, gamma=1.0,
+def build_train(make_obs_ph, p_dist_func, n_action, optimizer, grad_norm_clipping=None, gamma=1.0,
                 double_q=True, scope="distdeepq", reuse=None, param_noise=False, param_noise_filter_func=None,
                 dist_params=None):
     """Creates the train function:
@@ -211,7 +223,7 @@ def build_train(make_obs_ph, p_dist_func, num_actions, optimizer, grad_norm_clip
     if param_noise:
         raise ValueError('parameter noise not supported')
     else:
-        act_f = build_act(make_obs_ph, p_dist_func, num_actions, dist_params, scope=scope, reuse=reuse)
+        act_f = build_act(make_obs_ph, p_dist_func, n_action, dist_params, scope=scope, reuse=reuse)
 
     with tf.variable_scope(scope, reuse=reuse):
         # set up placeholders
@@ -224,29 +236,46 @@ def build_train(make_obs_ph, p_dist_func, num_actions, optimizer, grad_norm_clip
 
         # =====================================================================================
         # q network evaluation
-        p_t = p_dist_func(obs_t_input.get(), num_actions, dist_params['nb_atoms'], scope="q_func", reuse=True)  # reuse parameters from act
-        q_t = p_to_q(p_t, dist_params)  # reuse parameters from act
+        # p_t = p_dist_func(obs_t_input.get(), num_actions, dist_params['nb_atoms'], scope="q_func", reuse=True)  # reuse parameters from act
+        pi_t_, sigma_t_, mu_t_ = p_dist_func(obs_t_input.get(), n_action, dist_params['nb_atoms'], scope="q_func", reuse=True)
+        q_t = p_to_q(pi_t_, mu_t_, dist_params)  # reuse parameters from act
         q_func_vars = U.scope_vars(U.absolute_scope_name("q_func"))
 
         # target q network evalution
-        p_tp1 = p_dist_func(obs_tp1_input.get(), num_actions, dist_params['nb_atoms'], scope="target_q_func")
-        q_tp1 = p_to_q(p_tp1, dist_params)
+        pi_tp1_, sigma_tp1_, mu_tp1_ = p_dist_func(obs_tp1_input.get(), n_action, dist_params['nb_atoms'], scope="target_q_func")
+        q_tp1 = p_to_q(pi_tp1_, mu_tp1_, dist_params)
         target_q_func_vars = U.scope_vars(U.absolute_scope_name("target_q_func"))
 
         # TODO: use double
 
         a_next = tf.argmax(q_tp1, 1, output_type=tf.int32)
         batch_dim = tf.shape(rew_t_ph)[0]
-        ThTz, debug = build_categorical_alg(p_tp1, rew_t_ph, a_next, gamma, batch_dim, done_mask_ph, dist_params)
+        # TODO: r+gamma*Z, build_mog (target distribution)
+        pi_tg, sigma_tg, mu_tg, debug = build_mog(pi_tp1_, sigma_tp1_, mu_tp1_, rew_t_ph, a_next, gamma,
+                                                  batch_dim, done_mask_ph, dist_params)
+        # ThTz, debug = build_categorical_alg(p_tp1, rew_t_ph, a_next, gamma, batch_dim, done_mask_ph, dist_params)
 
         # compute the error (potentially clipped)
+        # TODO: only for the chosen action (update distribution)
         cat_idx = tf.transpose(tf.reshape(tf.concat([tf.range(batch_dim), act_t_ph], axis=0), [2, batch_dim]))
-        p_t_next = tf.gather_nd(p_t, cat_idx)
+        pi = tf.gather_nd(pi_t_, cat_idx)
+        sigma = tf.gather_nd(sigma_t_, cat_idx)
+        mu = tf.gather_nd(mu_t_, cat_idx)
 
-        cross_entropy = -1 * ThTz * tf.log(p_t_next)
-        errors = tf.reduce_sum(cross_entropy, axis=-1)
+        # loss
+        # cross_entropy = -1 * ThTz * tf.log(p_t_next)
 
-        mean_error = tf.reduce_mean(errors)
+        # second moment of JTD
+        # z, _ = build_z(**dist_params)
+        # zz = tf.reshape(tf.tile(z, [batch_dim]), [batch_dim, dist_params['nb_atoms']])
+        # loss = zz * zz * (ThTz - p_t_next) * (ThTz - p_t_next)
+        # errors = tf.sqrt(tf.reduce_sum(loss, axis=-1))
+
+        # second moment JTD of MoG
+        errors = (calc_integral(pi, sigma, mu, pi, sigma, mu, batch_dim, dist_params) +
+                calc_integral(pi_tg, sigma_tg, mu_tg, pi_tg, sigma_tg, mu_tg, batch_dim, dist_params) -
+                2*calc_integral(pi, sigma, mu, pi_tg, sigma_tg, mu_tg, batch_dim, dist_params))
+        mean_error = tf.reduce_mean(errors)  # average over batches
 
         # compute optimization op (potentially with gradient clipping)
         if grad_norm_clipping is not None:
@@ -284,36 +313,89 @@ def build_train(make_obs_ph, p_dist_func, num_actions, optimizer, grad_norm_clip
         q_values = U.function([obs_t_input], q_t)
 
         return act_f, train, update_target, {'q_values': q_values,
-                                             'p': p_tp1,
-                                             'cross_entropy': cross_entropy,
-                                             'ThTz': ThTz}
+                                             'mu': mu_tg,
+                                             'sigma': sigma_tg,
+                                             'pi': pi_tg,
+                                             'second_moment_jtd': errors,
+                                             }
 
 
-def build_categorical_alg(p_ph, r_ph, a_next, gamma, batch_dim, done_mask, dist_params):
-    """
-    Builds the vectorized cathegorical algorithm following equation (7) of 
-    'A Distributional Perspective on Reinforcement Learning' - https://arxiv.org/abs/1707.06887
-    """
-    z, dz = build_z(**dist_params)
-    Vmin, Vmax, nb_atoms = dist_params['Vmin'], dist_params['Vmax'], dist_params['nb_atoms']
-    with tf.variable_scope('cathegorical'):
+def build_mog(pi_tp1, sigma_tp1, mu_tp1, rew_t_ph, a_next, gamma, batch_dim, done_mask_ph, dist_params):
 
+    nb_mix = dist_params['nb_atoms']
+    with tf.variable_scope('mixture'):
         cat_idx = tf.transpose(tf.reshape(tf.concat([tf.range(batch_dim), a_next], axis=0), [2, batch_dim]))
-        p_best = tf.gather_nd(p_ph, cat_idx)
+        pi_best = tf.gather_nd(pi_tp1, cat_idx)
+        sigma_best = tf.gather_nd(sigma_tp1, cat_idx)
+        mu_best = tf.gather_nd(mu_tp1, cat_idx)
 
-        big_z = tf.reshape(tf.tile(z, [batch_dim]), [batch_dim, nb_atoms])
-        big_r = tf.transpose(tf.reshape(tf.tile(r_ph, [nb_atoms]), [nb_atoms, batch_dim]))
+        big_r = tf.transpose(tf.reshape(tf.tile(rew_t_ph, [nb_mix]), [nb_mix, batch_dim]))
 
-        Tz = tf.clip_by_value(big_r + gamma * tf.einsum('ij,i->ij', big_z, 1.-done_mask), Vmin, Vmax)
+        sigma_best = gamma * gamma * sigma_best
+        mu_best = tf.add(big_r, gamma * tf.einsum('ij,i->ij', mu_best, 1.-done_mask_ph))
+        # sess = tf.InteractiveSession()
+        # print(sess.run(pi_best))
+        # print(sess.run(mu_best))
+        # print(sess.run(sigma_best))
 
-        big_Tz = tf.reshape(tf.tile(Tz, [1, nb_atoms]), [-1, nb_atoms, nb_atoms])
-        big_big_z = tf.reshape(tf.tile(big_z, [1, nb_atoms]), [-1, nb_atoms, nb_atoms])
+    return pi_best, sigma_best, mu_best, {'mu_best': mu_best}
 
-        Tzz = tf.abs(big_Tz - tf.transpose(big_big_z, [0, 2, 1])) / dz
-        Thz = tf.clip_by_value(1 - Tzz, 0, 1)
 
-        ThTz = tf.einsum('ijk,ik->ij', Thz, p_best)
+def calc_integral(pi_i, sigma_i, mu_i, pi_j, sigma_j, mu_j, batch_dim, dist_params):
 
-    return ThTz, {'p_best': p_best}
+    nb_mix = dist_params['nb_atoms']
+    summ = tf.zeros([batch_dim])
+
+    for i in range(nb_mix):
+        for j in range(nb_mix):
+            # JTD
+            sum_sigma = tf.add(tf.gather(sigma_i, i, axis=-1), tf.gather(sigma_j, j, axis=-1))
+            exp = tf.exp(-tf.square(tf.gather(mu_i, i, axis=-1)-tf.gather(mu_j, j, axis=-1))/(2*sum_sigma))
+            summ = tf.add(summ, exp*tf.gather(pi_i, i, axis=-1)*tf.gather(pi_j, j, axis=-1)/tf.sqrt(sum_sigma))
+
+            # MMD
+            #sum_sigma = tf.add(tf.gather(sigma_i, i, axis=-1), tf.gather(sigma_j, j, axis=-1))
+            #inte = tf.add(sum_sigma, tf.square(tf.gather(mu_i, i, axis=-1)-tf.gather(mu_j, j, axis=-1)))
+            #summ = tf.add(summ, -inte*tf.gather(pi_i, i, axis=-1)*tf.gather(pi_j, j, axis=-1))
+
+    return summ*tf.cast(tf.constant(1/np.sqrt(2*np.pi)), 'float32')
+
+    #         sum_sigma = tf.add(tf.gather(sigma_i, i, axis=-1), tf.gather(sigma_j, j, axis=-1))
+    #         mul_sigma = tf.multiply(tf.gather(sigma_i, i, axis=-1), tf.gather(sigma_j, j, axis=-1))
+    #         w_sum = (tf.gather(mu_i, i, axis=-1)*tf.gather(sigma_j, j, axis=-1) +
+    #             tf.gather(mu_j, j, axis=-1)*tf.gather(sigma_i, i, axis=-1)) / sum_sigma
+    #         exp = tf.exp(-tf.square(tf.gather(mu_i, i, axis=-1)-tf.gather(mu_j, j, axis=-1))/(2*sum_sigma))
+    #         summation = tf.add(summation, (mul_sigma/sum_sigma + tf.square(w_sum)) * exp *
+    #                       tf.gather(pi_i, i, axis=-1)*tf.gather(pi_j, j, axis=-1) / tf.sqrt(sum_sigma))
+    #
+    # return summation*tf.cast(tf.constant(1/np.sqrt(32*np.pi)), 'float32')
+
+#
+# def build_categorical_alg(p_ph, r_ph, a_next, gamma, batch_dim, done_mask, dist_params):
+#     """
+#     Builds the vectorized cathegorical algorithm following equation (7) of
+#     'A Distributional Perspective on Reinforcement Learning' - https://arxiv.org/abs/1707.06887
+#     """
+#     z, dz = build_z(**dist_params)
+#     Vmin, Vmax, nb_atoms = dist_params['Vmin'], dist_params['Vmax'], dist_params['nb_atoms']
+#     with tf.variable_scope('categorical'):
+#
+#         cat_idx = tf.transpose(tf.reshape(tf.concat([tf.range(batch_dim), a_next], axis=0), [2, batch_dim]))
+#         p_best = tf.gather_nd(p_ph, cat_idx)
+#
+#         big_z = tf.reshape(tf.tile(z, [batch_dim]), [batch_dim, nb_atoms])
+#         big_r = tf.transpose(tf.reshape(tf.tile(r_ph, [nb_atoms]), [nb_atoms, batch_dim]))
+#
+#         Tz = tf.clip_by_value(big_r + gamma * tf.einsum('ij,i->ij', big_z, 1.-done_mask), Vmin, Vmax)
+#
+#         big_Tz = tf.reshape(tf.tile(Tz, [1, nb_atoms]), [-1, nb_atoms, nb_atoms])
+#         big_big_z = tf.reshape(tf.tile(big_z, [1, nb_atoms]), [-1, nb_atoms, nb_atoms])
+#
+#         Tzz = tf.abs(big_Tz - tf.transpose(big_big_z, [0, 2, 1])) / dz
+#         Thz = tf.clip_by_value(1 - Tzz, 0, 1)
+#
+#         ThTz = tf.einsum('ijk,ik->ij', Thz, p_best)
+#
+#     return ThTz, {'p_best': p_best}
 
 

@@ -41,7 +41,7 @@ def dist_mlp(hiddens=[], layer_norm=False):
     return lambda *args, **kwargs: _dist_mlp(hiddens, layer_norm=layer_norm, *args, **kwargs)
 
 
-def _cnn_to_dist_mlp(convs, hiddens, dueling, inpt, num_actions, nb_atoms, scope, reuse=False, layer_norm=False):
+def _cnn_to_dist_mlp(convs, hiddens, dueling, inpt, n_action, nb_atoms, scope, reuse=False, layer_norm=False):
     with tf.variable_scope(scope, reuse=reuse):
         out = inpt
         with tf.variable_scope("convnet"):
@@ -59,7 +59,7 @@ def _cnn_to_dist_mlp(convs, hiddens, dueling, inpt, num_actions, nb_atoms, scope
                 if layer_norm:
                     action_out = layers.layer_norm(action_out, center=True, scale=True)
                 action_out = tf.nn.relu(action_out)
-            action_scores = layers.fully_connected(action_out, num_outputs=num_actions * nb_atoms, activation_fn=None)
+            action_scores = layers.fully_connected(action_out, num_outputs=n_action * 3 * nb_atoms, activation_fn=None)
 
         if dueling:
             raise ValueError('Dueling not supported')
@@ -75,9 +75,21 @@ def _cnn_to_dist_mlp(convs, hiddens, dueling, inpt, num_actions, nb_atoms, scope
             # action_scores_centered = action_scores - tf.expand_dims(action_scores_mean, 1)
             # q_out = state_score + action_scores_centered
         else:
-            out = tf.reshape(action_scores, shape=[-1, num_actions, nb_atoms])
-            out = tf.nn.softmax(out, dim=-1, name='softmax')
-        return out
+            _out = tf.reshape(action_scores, shape=[-1, n_action, 3*nb_atoms])
+            out_pi_hat, out_sigma_hat, out_mu = tf.split(_out, 3, axis=-1)
+
+            out_pi_hat = tf.exp(out_pi_hat - tf.reduce_max(out_pi_hat, -1, keepdims=True))
+            nor_pi = tf.reciprocal(tf.reduce_sum(out_pi_hat, -1, keepdims=True))
+            out_pi = tf.multiply(nor_pi, out_pi_hat)
+            # out_sigma = 10*tf.sigmoid(out_sigma_hat) + 0.1 # + 1e-8
+            out_sigma = tf.exp(out_sigma_hat) + 0.01
+
+            #out = tf.map_fn(lambda x: tf.scalar_mul(1.,x), out) # lower sparsity
+            #out = tf.map_fn(tf.contrib.sparsemax.sparsemax, out, name='sparsemax')
+
+            #out = tf.nn.softmax(out, dim=-1, name='softmax')
+
+        return out_pi, out_sigma, out_mu
 
 
 def cnn_to_dist_mlp(convs, hiddens, dueling=False, layer_norm=False):
@@ -93,6 +105,7 @@ def cnn_to_dist_mlp(convs, hiddens, dueling=False, layer_norm=False):
     dueling: bool
         if true double the output MLP to compute a baseline
         for action scores
+    n_action: discretization level multiplied for each action
 
     Returns
     -------

@@ -8,10 +8,10 @@ import zipfile
 import baselines.common.tf_util as U
 
 from baselines import logger
-from baselines.common.schedules import LinearSchedule
+from baselines.common.schedules import LinearSchedule, PiecewiseSchedule
 import distdeepq
 from distdeepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
-from .static import build_z
+# from .static import build_z
 
 
 class ActWrapper(object):
@@ -82,6 +82,7 @@ def make_session(num_cpu):
     tf_config = tf.ConfigProto(
         inter_op_parallelism_threads=num_cpu,
         intra_op_parallelism_threads=num_cpu)
+    tf_config.gpu_options.allow_growth = True
     tf_config.gpu_options.per_process_gpu_memory_fraction = 0.25
     return tf.Session(config=tf_config)
 
@@ -91,8 +92,12 @@ def learn(env,
           lr=5e-4,
           max_timesteps=100000,
           buffer_size=50000,
-          exploration_fraction=0.1,
-          exploration_final_eps=0.02,
+          exp_t1=1e6,
+          exp_p1=0.1,
+          exp_t2=25e6,
+          exp_p2=0.01,
+          # exploration_fraction=0.1,
+          # exploration_final_eps=0.02,
           train_freq=1,
           batch_size=32,
           print_freq=1,
@@ -108,7 +113,9 @@ def learn(env,
           num_cpu=16,
           param_noise=False,
           callback=None,
-          dist_params=None
+          dist_params=None,
+          n_action=None,
+          action_map=None
           ):
     """Train a distdeepq model.
 
@@ -181,6 +188,8 @@ def learn(env,
 
     sess = make_session(num_cpu=num_cpu)
     sess.__enter__()
+    
+    # logger.configure()
 
     def make_obs_ph(name):
         return U.BatchInput(env.observation_space.shape, name=name)
@@ -188,12 +197,13 @@ def learn(env,
     if dist_params is None:
         raise ValueError('dist_params is required')
 
-    z, dz = build_z(**dist_params)
+    # z, dz = build_z(**dist_params)
 
     act, train, update_target, debug = distdeepq.build_train(
         make_obs_ph=make_obs_ph,
         p_dist_func=p_dist_func,
-        num_actions=env.action_space.n,
+        # num_actions=env.action_space.n,
+        n_action=n_action,
         optimizer=tf.train.AdamOptimizer(learning_rate=lr),
         gamma=gamma,
         grad_norm_clipping=10,
@@ -204,7 +214,7 @@ def learn(env,
     act_params = {
         'make_obs_ph': make_obs_ph,
         'p_dist_func': p_dist_func,
-        'num_actions': env.action_space.n,
+        'num_actions': n_action,
         'dist_params': dist_params
     }
 
@@ -220,9 +230,12 @@ def learn(env,
         replay_buffer = ReplayBuffer(buffer_size)
         beta_schedule = None
     # Create the schedule for exploration starting from 1.
-    exploration = LinearSchedule(schedule_timesteps=int(exploration_fraction * max_timesteps),
-                                 initial_p=1.0,
-                                 final_p=exploration_final_eps)
+    #exploration = LinearSchedule(schedule_timesteps=int(exploration_fraction * max_timesteps),
+    #                             initial_p=1.0,
+    #                             final_p=exploration_final_eps)
+    # exploration = PiecewiseSchedule([(0, 1.0),(max_timesteps/25, 0.1),
+    #                                   (max_timesteps, 0.01)], outside_value=0.01)
+    exploration = PiecewiseSchedule([(0, 1.0), (exp_t1, exp_p1), (exp_t2, exp_p2)], outside_value=exp_p2)
 
     # Initialize the parameters and copy them to the target network.
     U.initialize()
@@ -256,8 +269,12 @@ def learn(env,
                 kwargs['update_param_noise_scale'] = True
             action = act(np.array(obs)[None], update_eps=update_eps, **kwargs)[0]
             reset = False
-            new_obs, rew, done, _ = env.step(action)
 
+            action_val = action_map[action]
+            new_obs, rew, done, _ = env.step(action_val)
+
+            # rew = rew-1 for proposed loss with new metric
+            # rew = rew-1
             # Store transition in the replay buffer.
             replay_buffer.add(obs, action, rew, new_obs, float(done))
             obs = new_obs
@@ -293,6 +310,9 @@ def learn(env,
                 logger.record_tabular("episodes", num_episodes)
                 logger.record_tabular("mean 100 episode reward", mean_100ep_reward)
                 logger.record_tabular("% time spent exploring", int(100 * exploration.value(t)))
+                # debug['pi'] = tf.Print(debug['pi'], [debug['pi'], "target pi"])
+                # tf.Print(debug['mu'], [debug['mu'], "target mu"])
+                # tf.Print(debug['sigma'], [debug['sigma'], "target sigma"])
                 logger.dump_tabular()
 
             if (checkpoint_freq is not None and t > learning_starts and
