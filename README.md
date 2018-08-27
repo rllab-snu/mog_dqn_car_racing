@@ -1,7 +1,7 @@
 # MoG-DQN implementation by Yunho Choi:
-adapted from https://github.com/Silvicek/baselines
-1. install baseline (pip install -e .)
-2. pip install box2d       (if swig error, sudo apt-get install swig)
+adapted from https://github.com/Silvicek/distributional-dqn
+1. install baseline https://github.com/ececyh/baselines (pip install -e .)
+2. pip install gym, box2d       (if swig error, sudo apt-get install swig)
 3. import train_car_racing  and run the exp function
     ex) train_car_racing.exp(buffer_size=1e6, action_res=[5,5,5])
 
