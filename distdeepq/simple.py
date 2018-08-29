@@ -90,6 +90,7 @@ def make_session(num_cpu):
 def learn(env,
           p_dist_func,
           lr=5e-4,
+          eps=0.0003125,
           max_timesteps=100000,
           buffer_size=50000,
           exp_t1=1e6,
@@ -204,7 +205,7 @@ def learn(env,
         p_dist_func=p_dist_func,
         # num_actions=env.action_space.n,
         n_action=n_action,
-        optimizer=tf.train.AdamOptimizer(learning_rate=lr),
+        optimizer=tf.train.AdamOptimizer(learning_rate=lr, epsilon=eps),
         gamma=gamma,
         grad_norm_clipping=10,
         param_noise=param_noise,
@@ -272,7 +273,7 @@ def learn(env,
 
             action_val = action_map[action]
             new_obs, rew, done, _ = env.step(action_val)
-
+            # env.render()
             # rew = rew-1 for proposed loss with new metric
             # rew = rew-1
             # Store transition in the replay buffer.

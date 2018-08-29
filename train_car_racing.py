@@ -6,6 +6,7 @@ from baselines.common.atari_wrappers import wrapper_car_racing
 
 def exp(env_name='CarRacing-v0',
         lr=1e-4,
+        eps=0.0003125,
         max_timesteps=25e6,
         buffer_size=1e6,
         batch_size=32,
@@ -41,6 +42,7 @@ def exp(env_name='CarRacing-v0',
         env,
         p_dist_func=model,
         lr=lr,  # 1e-4
+        eps=eps,
         max_timesteps=int(max_timesteps), # 25M
         buffer_size=int(buffer_size), # 1M
         batch_size=int(batch_size),
@@ -84,4 +86,6 @@ def get_action_information(env, env_name, action_res=None):
 
 
 if __name__ == '__main__':
-    exp(buffer_size=1e5, action_res=[5, 5, 5])
+    exp(lr=2.5e-4, max_timesteps=2.5e6, buffer_size=1e4, exp_t1=1e6, exp_t2=2.5e6,
+        exp_p1=0.1, exp_p2=0.01, hiddens=[256],
+        learning_starts=1e4, target_network_update_freq=1e3, num_cpu=4, action_res=[4, 4, 4])

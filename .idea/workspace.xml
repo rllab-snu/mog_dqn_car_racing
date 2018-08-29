@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="589f233c-d2ce-496c-9375-5abf1923ee47" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distdeepq/simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/distdeepq/simple.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_car_racing.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_car_racing.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -13,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="train_car_racing.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="train_car_racing.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/train_car_racing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="498">
-              <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
+            <state relative-caret-position="168">
+              <caret line="20" column="19" lean-forward="true" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -25,7 +26,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="255">
@@ -49,8 +50,8 @@
       <file leaf-file-name="simple.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/distdeepq/simple.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="723">
-              <caret line="250" selection-start-line="250" selection-end-line="250" />
+            <state relative-caret-position="183">
+              <caret line="92" column="24" selection-start-line="92" selection-start-column="24" selection-end-line="92" selection-end-column="24" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -61,8 +62,8 @@
       <file leaf-file-name="build_graph.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/distdeepq/build_graph.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1275">
-              <caret line="148" column="68" selection-start-line="148" selection-start-column="68" selection-end-line="148" selection-end-column="68" />
+            <state relative-caret-position="221">
+              <caret line="281" column="57" selection-start-line="281" selection-start-column="48" selection-end-line="281" selection-end-column="57" />
               <folding>
                 <element signature="e#2160#2183#0" expanded="true" />
               </folding>
@@ -73,7 +74,7 @@
       <file leaf-file-name="static.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/distdeepq/static.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
+            <state relative-caret-position="525">
               <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
@@ -98,6 +99,9 @@
       <find>callback</find>
       <find>num_actions</find>
       <find>seed</find>
+      <find>adam</find>
+      <find>epsilon</find>
+      <find>optimizer</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -110,11 +114,11 @@
         <option value="$PROJECT_DIR$/distdeepq/plots.py" />
         <option value="$PROJECT_DIR$/train_pong.py" />
         <option value="$PROJECT_DIR$/distdeepq/build_graph.py" />
-        <option value="$PROJECT_DIR$/distdeepq/simple.py" />
         <option value="$PROJECT_DIR$/distdeepq/models.py" />
         <option value="$PROJECT_DIR$/train_atari.py" />
-        <option value="$PROJECT_DIR$/train_car_racing.py" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/distdeepq/simple.py" />
+        <option value="$PROJECT_DIR$/train_car_racing.py" />
       </list>
     </option>
   </component>
@@ -234,10 +238,10 @@
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15687332" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15687332" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5007143" side_tool="true" weight="0.32623318" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32889345" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32889345" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32889345" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -530,6 +534,33 @@ print(sess.run(errors))</expression-string>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="40" lean-forward="true" selection-start-line="17" selection-start-column="40" selection-end-line="17" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/distdeepq/static.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="525">
+          <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/distdeepq/build_graph.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="281" column="57" selection-start-line="281" selection-start-column="48" selection-end-line="281" selection-end-column="57" />
+          <folding>
+            <element signature="e#2160#2183#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/distdeepq/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-312">
@@ -540,30 +571,10 @@ print(sess.run(errors))</expression-string>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/distdeepq/static.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="35" column="13" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/distdeepq/build_graph.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1275">
-          <caret line="148" column="68" selection-start-line="148" selection-start-column="68" selection-end-line="148" selection-end-column="68" />
-          <folding>
-            <element signature="e#2160#2183#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/distdeepq/simple.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="723">
-          <caret line="250" selection-start-line="250" selection-end-line="250" />
+        <state relative-caret-position="183">
+          <caret line="92" column="24" selection-start-line="92" selection-start-column="24" selection-end-line="92" selection-end-column="24" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -572,18 +583,11 @@ print(sess.run(errors))</expression-string>
     </entry>
     <entry file="file://$PROJECT_DIR$/train_car_racing.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="498">
-          <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
+        <state relative-caret-position="168">
+          <caret line="20" column="19" lean-forward="true" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="40" lean-forward="true" selection-start-line="17" selection-start-column="40" selection-end-line="17" selection-end-column="40" />
         </state>
       </provider>
     </entry>
