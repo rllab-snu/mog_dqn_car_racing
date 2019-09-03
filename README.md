@@ -1,3 +1,5 @@
+Yunho Choi, Kyungjae Lee, and Songhwai Oh, "Distributional Deep Reinforcement Learning with a Mixture of Gaussians," in Proc. of the IEEE International Conference on Robotics and Automation (ICRA), May 2019. 
+
 # MoG-DQN implementation by Yunho Choi:
 adapted from https://github.com/Silvicek/distributional-dqn
 1. install baseline https://github.com/ececyh/baselines (pip install -e .)
